@@ -24,6 +24,15 @@ exports.getUsers = getUsers;
 const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const user = yield prisma.user.findUnique({ where: { id: Number(id) } });
+    if (!user) {
+        res.status(404).json({
+            success: false,
+            data: {},
+            message: 'User not found',
+            Error: {}
+        });
+        return;
+    }
     res.status(200).json({
         success: true,
         data: user,
@@ -42,7 +51,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
     catch (error) {
         res.status(400).json({
-            success: true,
+            success: false,
             data: {},
             message: `${req.body.username} is not available`,
             Error: error
@@ -66,7 +75,7 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
     catch (error) {
         res.status(400).json({
-            success: true,
+            success: false,
             data: {},
             message: `${req.body.username} is not available`,
             Error: error
@@ -76,12 +85,33 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.updateUser = updateUser;
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    yield prisma.user.delete({ where: { id: Number(id) } });
-    res.status(200).json({
-        success: true,
-        data: {},
-        message: 'User deleted',
-        Error: {}
-    });
+    const deleteUser = yield prisma.user.delete({ where: { id: Number(id) } });
+    if (!deleteUser) {
+        res.status(400).json({
+            success: false,
+            data: {},
+            message: 'User is not deleted',
+            Error: {}
+        });
+        return;
+    }
+    try {
+        res.status(200).json({
+            success: true,
+            data: {},
+            message: 'User deleted',
+            Error: {}
+        });
+        return;
+    }
+    catch (error) {
+        res.status(500).json({
+            success: true,
+            data: {},
+            message: 'Server error',
+            Error: {}
+        });
+        return;
+    }
 });
 exports.deleteUser = deleteUser;
